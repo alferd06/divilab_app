@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'data/database_helper.dart';
 import 'screens/home_shell.dart';
-import 'screens/login_page.dart';
+import 'screens/splash_page.dart';
 import 'theme/app_theme.dart';
 
 Future<void> main() async {
@@ -20,7 +20,7 @@ class DiviLabApp extends StatelessWidget {
       title: 'DiViLab',
       debugShowCheckedModeBanner: false,
       theme: buildAppTheme(),
-      home: const LoginPage(),
+      home: const SplashPage(),
     );
   }
 }
