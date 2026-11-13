@@ -13,6 +13,7 @@ class DashboardPage extends StatefulWidget {
 
 class _DashboardPageState extends State<DashboardPage> {
   Map<String, Object?>? _glucose;
+  Map<String, Object?>? _bp;
 
   @override
   void initState() {
@@ -22,10 +23,14 @@ class _DashboardPageState extends State<DashboardPage> {
 
   Future<void> _load() async {
     final userId = Session.user!['id'] as int;
-    final row =
-    await MeasurementRepository.latest(userId, MeasurementRepository.glucose);
+    final row = await MeasurementRepository.latest(userId, MeasurementRepository.glucose);
+    final rowBp = await MeasurementRepository.latest(userId, MeasurementRepository.tekananDarah);
+
     if (!mounted) return;
-    setState(() => _glucose = row);
+    setState(() {
+      _glucose = row;
+      _bp = rowBp;
+    });
   }
 
   Widget _header(String name) {
@@ -112,10 +117,15 @@ class _DashboardPageState extends State<DashboardPage> {
     final user = Session.user!;
     final name = user['full_name'] as String;
     final code = user['product_code'] as String;
+
     final g = _glucose;
-    final glucoseValue =
-    g == null ? '--' : (g['value'] as num).toStringAsFixed(0);
+    final glucoseValue = g == null ? '--' : (g['value'] as num).toStringAsFixed(0);
     final glucoseStatus = g == null ? null : g['status'] as String;
+
+    final bp = _bp;
+    final bpValue = bp == null ? '--/--' : '${(bp['value'] as num).toStringAsFixed(0)}/${(bp['diastolic'] as num).toStringAsFixed(0)}';
+    final bpUnit = bp == null ? 'mmHg' : 'mmHg\n(${bp['pulse']} bpm)';
+    final bpStatus = bp == null ? null : bp['status'] as String;
 
     return Container(
       color: const Color(0xFF1E8FE5),
@@ -190,7 +200,7 @@ class _DashboardPageState extends State<DashboardPage> {
                         const SizedBox(width: 12),
                         FilledButton(
                           style: FilledButton.styleFrom(
-                            minimumSize: const Size(0, 36), // wajib: tema default lebar tak terbatas
+                            minimumSize: const Size(0, 36),
                             padding: const EdgeInsets.symmetric(horizontal: 16),
                           ),
                           onPressed: widget.onMeasure,
@@ -228,9 +238,9 @@ class _DashboardPageState extends State<DashboardPage> {
                       ],
                     ),
                     const SizedBox(height: 12),
-                    const Row(
+                    Row(
                       children: [
-                        Expanded(
+                        const Expanded(
                           child: _MetricCard(
                             title: 'Asam Urat',
                             icon: Icons.science,
@@ -239,14 +249,15 @@ class _DashboardPageState extends State<DashboardPage> {
                             unit: 'mg/dL',
                           ),
                         ),
-                        SizedBox(width: 12),
+                        const SizedBox(width: 12),
                         Expanded(
                           child: _MetricCard(
                             title: 'Tekanan Darah',
                             icon: Icons.monitor_heart,
                             color: Colors.deepPurple,
-                            value: '--/--',
-                            unit: 'mmHg',
+                            value: bpValue,
+                            unit: bpUnit,
+                            status: bpStatus,
                           ),
                         ),
                       ],
