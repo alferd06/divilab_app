@@ -10,30 +10,42 @@ class DatabaseHelper {
 
   Future<Database> _open() async {
     final path = join(await getDatabasesPath(), 'divilab.db');
-    return openDatabase(path, version: 1, onCreate: (db, version) async {
-      await db.execute('''
-        CREATE TABLE users(
-          id INTEGER PRIMARY KEY AUTOINCREMENT,
-          email TEXT NOT NULL UNIQUE,
-          password_hash TEXT NOT NULL,
-          full_name TEXT NOT NULL,
-          gender TEXT NOT NULL,
-          birth_date TEXT NOT NULL,
-          height_cm REAL NOT NULL,
-          weight_kg REAL NOT NULL,
-          product_code TEXT NOT NULL
-        )''');
-      await db.execute('''
-        CREATE TABLE measurements(
-          id INTEGER PRIMARY KEY AUTOINCREMENT,
-          user_id INTEGER NOT NULL,
-          type TEXT NOT NULL,
-          value REAL NOT NULL,
-          unit TEXT NOT NULL,
-          status TEXT NOT NULL,
-          created_at TEXT NOT NULL,
-          FOREIGN KEY(user_id) REFERENCES users(id)
-        )''');
-    });
+    return openDatabase(
+      path,
+      version: 2,
+      onCreate: (db, version) async {
+        await db.execute('''
+          CREATE TABLE users(
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            email TEXT NOT NULL UNIQUE,
+            password_hash TEXT NOT NULL,
+            full_name TEXT NOT NULL,
+            gender TEXT NOT NULL,
+            birth_date TEXT NOT NULL,
+            height_cm REAL NOT NULL,
+            weight_kg REAL NOT NULL,
+            product_code TEXT NOT NULL
+          )''');
+        await db.execute('''
+          CREATE TABLE measurements(
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            type TEXT NOT NULL,
+            value REAL NOT NULL,
+            unit TEXT NOT NULL,
+            status TEXT NOT NULL,
+            created_at TEXT NOT NULL,
+            diastolic REAL,
+            pulse INTEGER,
+            FOREIGN KEY(user_id) REFERENCES users(id)
+          )''');
+      },
+      onUpgrade: (db, oldVersion, newVersion) async {
+        if (oldVersion < 2) {
+          await db.execute('ALTER TABLE measurements ADD COLUMN diastolic REAL');
+          await db.execute('ALTER TABLE measurements ADD COLUMN pulse INTEGER');
+        }
+      },
+    );
   }
 }
