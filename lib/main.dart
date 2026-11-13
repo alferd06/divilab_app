@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'data/database_helper.dart';
 import 'screens/home_shell.dart';
 import 'screens/login_page.dart';
+import 'theme/app_theme.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -18,10 +19,7 @@ class DiviLabApp extends StatelessWidget {
     return MaterialApp(
       title: 'DiViLab',
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF00A6E8)),
-        useMaterial3: true,
-      ),
+      theme: buildAppTheme(),
       home: const LoginPage(),
     );
   }
