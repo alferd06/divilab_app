@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'package:crypto/crypto.dart';
-import 'package:flutter/foundation.dart';
 import 'database_helper.dart';
 
 class UserRepository {
@@ -38,7 +37,18 @@ class UserRepository {
       'weight_kg': weightKg,
       'product_code': productCode.trim(),
     });
-    debugPrint('users: ${await db.query('users')}'); // bukti AC, hapus setelah dicek
     return id;
+  }
+
+  /// Mengembalikan baris user jika email + password cocok, selain itu null.
+  static Future<Map<String, Object?>?> login(String email, String password) async {
+    final db = await DatabaseHelper.instance.database;
+    final rows = await db.query(
+      'users',
+      where: 'email = ? AND password_hash = ?',
+      whereArgs: [email.trim().toLowerCase(), hashPassword(password)],
+      limit: 1,
+    );
+    return rows.isEmpty ? null : rows.first;
   }
 }

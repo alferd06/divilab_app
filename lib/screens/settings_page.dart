@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'external_user_page.dart';
+import '../services/session.dart';
+import 'login_page.dart';
 
 class SettingsPage extends StatelessWidget {
   const SettingsPage({super.key});
@@ -18,6 +20,18 @@ class SettingsPage extends StatelessWidget {
               context,
               MaterialPageRoute(builder: (_) => const ExternalUserPage()),
             ),
+          ),
+          ListTile(
+            leading: const Icon(Icons.logout),
+            title: const Text('Logout'),
+            onTap: () {
+              Session.clear();
+              Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(builder: (_) => const LoginPage()),
+                    (route) => false,
+              );
+            },
           ),
         ],
       ),
