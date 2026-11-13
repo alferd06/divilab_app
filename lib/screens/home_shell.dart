@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'settings_page.dart';
 
 class HomeShell extends StatefulWidget {
   const HomeShell({super.key});
@@ -8,12 +9,17 @@ class HomeShell extends StatefulWidget {
 
 class _HomeShellState extends State<HomeShell> {
   int _index = 0;
-  static const _titles = ['Beranda', 'Laporan', 'Produk', 'Pengaturan'];
+  static const _pages = <Widget>[
+    Center(child: Text('Beranda')),
+    Center(child: Text('Laporan')),
+    Center(child: Text('Segera hadir')), // Produk: tidak ada mockup
+    SettingsPage(),
+  ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Center(child: Text(_titles[_index])), // placeholder
+      body: _pages[_index],
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _index,
         type: BottomNavigationBarType.fixed,
