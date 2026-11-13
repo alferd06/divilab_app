@@ -71,8 +71,15 @@ class _ReportsPageState extends State<ReportsPage> {
       padding: const EdgeInsets.only(bottom: 12),
       child: InkWell(
         borderRadius: BorderRadius.circular(12),
-        onTap: (type == MeasurementRepository.glucose || type == MeasurementRepository.tekananDarah)
-            ? () => Navigator.push(context, MaterialPageRoute(builder: (_) => HistoryPage(type: type)))
+        onTap: (type == MeasurementRepository.glucose ||
+            type == MeasurementRepository.tekananDarah)
+            ? () async {
+            await Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => HistoryPage(type: type)),
+            );
+            if (mounted) _loadData(); // muat ulang setelah kembali dari riwayat
+            }
             : null,
         child: Container(
           clipBehavior: Clip.antiAlias,

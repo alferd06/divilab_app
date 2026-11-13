@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../widgets/add_measurement_sheet.dart';
 import 'connect_device_page.dart';
 import 'dashboard_page.dart';
+import 'reports_page.dart';
 import 'settings_page.dart';
 
 class HomeShell extends StatefulWidget {
@@ -12,7 +13,7 @@ class HomeShell extends StatefulWidget {
 
 class _HomeShellState extends State<HomeShell> {
   int _index = 0;
-  int _refresh = 0; // dinaikkan setelah alur pengukuran supaya Dashboard memuat ulang
+  int _refresh = 0;
 
   Future<void> _startDeviceFlow() async {
     await Navigator.push(
@@ -29,8 +30,8 @@ class _HomeShellState extends State<HomeShell> {
   Widget build(BuildContext context) {
     final pages = <Widget>[
       DashboardPage(key: ValueKey(_refresh), onMeasure: _startDeviceFlow),
-      const Center(child: Text('Laporan')),
-      const Center(child: Text('Segera hadir')), // Produk: tidak ada mockup
+      ReportsPage(key: ValueKey('reports_$_refresh')),
+      const Center(child: Text('Segera hadir')),
       const SettingsPage(),
     ];
 
