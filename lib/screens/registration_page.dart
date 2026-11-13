@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import '../data/user_repository.dart';
+import '../theme/app_theme.dart';
+import '../widgets/labeled_field.dart';
 
 class RegistrationPage extends StatefulWidget {
   const RegistrationPage({super.key});
@@ -34,6 +36,12 @@ class _RegistrationPageState extends State<RegistrationPage> {
     }
     super.dispose();
   }
+
+  bool _passwordValid(String v) =>
+      v.length >= 10 &&
+          RegExp(r'[A-Z]').hasMatch(v) &&
+          RegExp(r'[a-z]').hasMatch(v) &&
+          RegExp(r'[^A-Za-z0-9]').hasMatch(v);
 
   String? _required(String? v, String label) =>
       (v == null || v.trim().isEmpty) ? '$label wajib diisi' : null;
@@ -90,7 +98,7 @@ class _RegistrationPageState extends State<RegistrationPage> {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Registrasi berhasil, silakan login')));
-      Navigator.pop(context); // kembali ke Login
+      Navigator.pop(context);
     } catch (e) {
       if (!mounted) return;
       setState(() => _saving = false);
@@ -107,18 +115,54 @@ class _RegistrationPageState extends State<RegistrationPage> {
     }
   }
 
+  Widget _genderBox(String value) {
+    final selected = _gender == value;
+    return Expanded(
+      child: InkWell(
+        borderRadius: BorderRadius.circular(8),
+        onTap: () => setState(() {
+          _gender = value;
+          _genderError = false;
+        }),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+          decoration: BoxDecoration(
+            border: Border.all(
+                color: selected ? AppColors.primary : AppColors.border),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Row(
+            children: [
+              Icon(
+                selected
+                    ? Icons.radio_button_checked
+                    : Icons.radio_button_unchecked,
+                size: 20,
+                color: selected ? AppColors.primary : Colors.grey,
+              ),
+              const SizedBox(width: 8),
+              Flexible(child: Text(value)),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _step1() => Form(
     key: _form1,
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('Email & Password',
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600)),
-        const SizedBox(height: 16),
-        TextFormField(
+        const Text('Buat Akun',
+            style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold)),
+        const SizedBox(height: 8),
+        const Text('Daftar untuk memulai'),
+        const SizedBox(height: 32),
+        LabeledField(
+          label: 'Email',
           controller: _email,
           keyboardType: TextInputType.emailAddress,
-          decoration: const InputDecoration(labelText: 'Email'),
           onChanged: (_) => _emailError = null,
           validator: (v) {
             final value = (v ?? '').trim();
@@ -128,31 +172,37 @@ class _RegistrationPageState extends State<RegistrationPage> {
             return _emailError;
           },
         ),
-        const SizedBox(height: 12),
-        TextFormField(
+        const SizedBox(height: 20),
+        LabeledField(
+          label: 'Password',
           controller: _password,
-          obscureText: _hidePass,
-          decoration: InputDecoration(
-            labelText: 'Password',
-            suffixIcon: IconButton(
-              icon: Icon(_hidePass ? Icons.visibility_off : Icons.visibility),
-              onPressed: () => setState(() => _hidePass = !_hidePass),
-            ),
+          obscure: _hidePass,
+          onToggleObscure: () => setState(() => _hidePass = !_hidePass),
+          validator: (v) => _passwordValid(v ?? '')
+              ? null
+              : 'Password belum memenuhi aturan',
+          helper: const Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Icon(Icons.info_outline, size: 18, color: Colors.black54),
+              SizedBox(width: 6),
+              Expanded(
+                child: Text(
+                  '1 huruf besar — 1 huruf kecil — 1 simbol — minimal 10 karakter',
+                  style:
+                  TextStyle(color: AppColors.primary, fontSize: 13),
+                ),
+              ),
+            ],
           ),
-          validator: (v) =>
-          (v ?? '').length < 6 ? 'Password minimal 6 karakter' : null,
         ),
-        const SizedBox(height: 12),
-        TextFormField(
+        const SizedBox(height: 20),
+        LabeledField(
+          label: 'Konfirmasi password',
           controller: _confirm,
-          obscureText: _hideConfirm,
-          decoration: InputDecoration(
-            labelText: 'Konfirmasi Password',
-            suffixIcon: IconButton(
-              icon: Icon(_hideConfirm ? Icons.visibility_off : Icons.visibility),
-              onPressed: () => setState(() => _hideConfirm = !_hideConfirm),
-            ),
-          ),
+          obscure: _hideConfirm,
+          onToggleObscure: () =>
+              setState(() => _hideConfirm = !_hideConfirm),
           validator: (v) =>
           v != _password.text ? 'Konfirmasi password tidak sama' : null,
         ),
@@ -166,27 +216,22 @@ class _RegistrationPageState extends State<RegistrationPage> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Text('Data Personal',
-            style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600)),
-        const SizedBox(height: 16),
-        TextFormField(
+            style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold)),
+        const SizedBox(height: 32),
+        LabeledField(
+          label: 'Nama Lengkap',
           controller: _name,
-          decoration: const InputDecoration(labelText: 'Nama Lengkap'),
           validator: (v) => _required(v, 'Nama lengkap'),
         ),
-        const SizedBox(height: 12),
-        const Text('Jenis Kelamin'),
-        const SizedBox(height: 6),
-        SegmentedButton<String>(
-          emptySelectionAllowed: true,
-          segments: const [
-            ButtonSegment(value: 'Laki-Laki', label: Text('Laki-Laki')),
-            ButtonSegment(value: 'Perempuan', label: Text('Perempuan')),
+        const SizedBox(height: 20),
+        const Text('Jenis Kelamin', style: TextStyle(fontSize: 16)),
+        const SizedBox(height: 8),
+        Row(
+          children: [
+            _genderBox('Laki-Laki'),
+            const SizedBox(width: 12),
+            _genderBox('Perempuan'),
           ],
-          selected: _gender == null ? <String>{} : {_gender!},
-          onSelectionChanged: (s) => setState(() {
-            _gender = s.isEmpty ? null : s.first;
-            _genderError = false;
-          }),
         ),
         if (_genderError)
           const Padding(
@@ -194,44 +239,43 @@ class _RegistrationPageState extends State<RegistrationPage> {
             child: Text('Jenis kelamin wajib dipilih',
                 style: TextStyle(color: Colors.red, fontSize: 12)),
           ),
-        const SizedBox(height: 12),
-        TextFormField(
+        const SizedBox(height: 20),
+        LabeledField(
+          label: 'Tanggal Lahir',
           controller: _birth,
           readOnly: true,
           onTap: _pickDate,
-          decoration: const InputDecoration(
-              labelText: 'Tanggal Lahir',
-              suffixIcon: Icon(Icons.calendar_today)),
+          suffix: const Icon(Icons.calendar_today_outlined),
           validator: (v) => _required(v, 'Tanggal lahir'),
         ),
-        const SizedBox(height: 12),
+        const SizedBox(height: 20),
         Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Expanded(
-              child: TextFormField(
+              child: LabeledField(
+                label: 'Tinggi (cm)',
                 controller: _height,
                 keyboardType: TextInputType.number,
-                decoration: const InputDecoration(labelText: 'Tinggi (cm)'),
                 validator: (v) => _positiveNumber(v, 'Tinggi'),
               ),
             ),
             const SizedBox(width: 12),
             Expanded(
-              child: TextFormField(
+              child: LabeledField(
+                label: 'Berat (kg)',
                 controller: _weight,
                 keyboardType: TextInputType.number,
-                decoration: const InputDecoration(labelText: 'Berat (kg)'),
                 validator: (v) => _positiveNumber(v, 'Berat'),
               ),
             ),
           ],
         ),
-        const SizedBox(height: 12),
-        TextFormField(
+        const SizedBox(height: 20),
+        LabeledField(
+          label: 'Kode Produksi',
           controller: _code,
-          decoration: const InputDecoration(
-              labelText: 'Kode Produksi',
-              suffixIcon: Icon(Icons.camera_alt_outlined)), // tampilan saja
+          suffix: const Icon(Icons.camera_alt_outlined), // tampilan saja
           validator: (v) => _required(v, 'Kode produksi'),
         ),
       ],
@@ -241,28 +285,39 @@ class _RegistrationPageState extends State<RegistrationPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        leading: IconButton(icon: const Icon(Icons.arrow_back), onPressed: _back),
-        title: const Text('Registrasi'),
-      ),
       body: SafeArea(
         child: Column(
           children: [
-            LinearProgressIndicator(value: _step / 2),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(24, 8, 24, 0),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(4),
+                child: LinearProgressIndicator(
+                  value: _step / 2,
+                  minHeight: 6,
+                  backgroundColor: AppColors.disabled,
+                ),
+              ),
+            ),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: IconButton(
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                icon: const Icon(Icons.arrow_back_ios_new, size: 20),
+                onPressed: _back,
+              ),
+            ),
             Expanded(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.all(20),
+                padding: const EdgeInsets.symmetric(horizontal: 24),
                 child: _step == 1 ? _step1() : _step2(),
               ),
             ),
             Padding(
-              padding: const EdgeInsets.all(20),
-              child: SizedBox(
-                width: double.infinity,
-                child: FilledButton(
-                  onPressed: _saving ? null : (_step == 1 ? _next : _submit),
-                  child: Text(_saving ? 'Menyimpan...' : 'Continue'),
-                ),
+              padding: const EdgeInsets.all(24),
+              child: FilledButton(
+                onPressed: _saving ? null : (_step == 1 ? _next : _submit),
+                child: Text(_saving ? 'Menyimpan...' : 'Lanjut'),
               ),
             ),
           ],
