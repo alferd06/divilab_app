@@ -3,6 +3,7 @@ import '../data/measurement_repository.dart';
 import '../services/session.dart';
 import '../theme/app_theme.dart';
 import 'history_page.dart';
+import '../services/report_pdf.dart';
 
 class ReportsPage extends StatefulWidget {
   const ReportsPage({super.key});
@@ -14,6 +15,25 @@ class ReportsPage extends StatefulWidget {
 class _ReportsPageState extends State<ReportsPage> {
   Map<String, dynamic>? _glucose;
   Map<String, dynamic>? _bp;
+
+  bool _downloading = false;
+  Future<void> _download() async {
+    if (_downloading) return;
+    setState(() => _downloading = true);
+    try {
+      await ReportPdf.open(
+        userId: Session.user!['id'] as int,
+        userName: Session.user!['full_name'] as String,
+      );
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Gagal membuat dokumen: $e')));
+      }
+    } finally {
+      if (mounted) setState(() => _downloading = false);
+    }
+  }
 
   @override
   void initState() {
@@ -143,6 +163,21 @@ class _ReportsPageState extends State<ReportsPage> {
         title: const Text('Laporan', style: TextStyle(fontWeight: FontWeight.w600)),
         centerTitle: false,
         elevation: 0,
+        actions: [
+          Padding(
+            padding: const EdgeInsets.only(right: 16),
+            child: TextButton.icon(
+              onPressed: _downloading ? null : _download,
+              icon: const Icon(Icons.download_outlined, size: 18),
+              label: Text(_downloading ? 'Memproses...' : 'Download'),
+              style: TextButton.styleFrom(
+                backgroundColor: AppColors.chipBg,
+                foregroundColor: Colors.black87,
+                shape: const StadiumBorder(),
+              ),
+            ),
+          ),
+        ],
       ),
       body: SafeArea(
         child: RefreshIndicator(
