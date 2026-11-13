@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import '../data/measurement_repository.dart';
 import '../services/session.dart';
 import '../theme/app_theme.dart';
+import '../widgets/strip_countdown_dialog.dart';
 
 enum _Phase { waiting, running, done }
 
@@ -76,6 +77,13 @@ class _MeasurementPageState extends State<MeasurementPage> {
       _finalValue = value;
       _finalStatus = status;
     });
+    if (!mounted) return;
+    setState(() {
+      _phase = _Phase.done;
+      _finalValue = value;
+      _finalStatus = status;
+    });
+    await showStripCountdownDialog(context); // <- baris baru
   }
 
   void _soon(String msg) =>
